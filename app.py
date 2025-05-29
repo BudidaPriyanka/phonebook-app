@@ -1,21 +1,21 @@
-from flask import Flask, request, redirect, url_for, render_template
+from flask import Flask, render_template, request, redirect, url_for, jsonify
 import json
 import os
 
 app = Flask(__name__)
-DATA_FILE = "contacts.json"
 
-# Load contacts
+# Load or create contacts
+if not os.path.exists("contacts.json"):
+    with open("contacts.json", "w") as f:
+        json.dump([], f)
+
 def load_contacts():
-    if os.path.exists(DATA_FILE):
-        with open(DATA_FILE, "r") as f:
-            return json.load(f)
-    return {}
+    with open("contacts.json", "r") as f:
+        return json.load(f)
 
-# Save contacts
 def save_contacts(contacts):
-    with open(DATA_FILE, "w") as f:
-        json.dump(contacts, f, indent=4)
+    with open("contacts.json", "w") as f:
+        json.dump(contacts, f, indent=2)
 
 @app.route("/")
 def index():
@@ -23,38 +23,25 @@ def index():
     return render_template("index.html", contacts=contacts)
 
 @app.route("/add", methods=["POST"])
-def add_contact():
+def add():
     contacts = load_contacts()
-    name = request.form["name"]
-    phone = request.form["phone"]
-    email = request.form["email"]
-    contacts[name] = {"Phone": phone, "Email": email}
+    contacts.append({
+        "name": request.form["name"],
+        "phone": request.form["phone"],
+        "email": request.form["email"]
+    })
     save_contacts(contacts)
     return redirect(url_for("index"))
 
-@app.route("/delete/<name>")
-def delete_contact(name):
+@app.route("/delete/<int:index>")
+def delete(index):
     contacts = load_contacts()
-    if name in contacts:
-        del contacts[name]
-    save_contacts(contacts)
-    return redirect(url_for("index"))
-
-@app.route("/edit/<name>", methods=["GET", "POST"])
-def edit_contact(name):
-    contacts = load_contacts()
-    if request.method == "POST":
-        contacts[name] = {
-            "Phone": request.form["phone"],
-            "Email": request.form["email"]
-        }
+    if 0 <= index < len(contacts):
+        contacts.pop(index)
         save_contacts(contacts)
-        return redirect(url_for("index"))
-    contact = contacts.get(name, {})
-    return render_template("edit.html", name=name, contact=contact)
+    return redirect(url_for("index"))
 
-import os
-
+# ✅ MOST IMPORTANT: Render-friendly app start
 if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 10000))
+    port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
