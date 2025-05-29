@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Phonebook</title>
+</head>
+<body>
+    <h1>Phonebook</h1>
+    <form method="post" action="/add">
+        Name: <input type="text" name="name" required><br>
+        Phone: <input type="text" name="phone" required><br>
+        Email: <input type="email" name="email"><br>
+        <input type="submit" value="Add Contact">
+    </form>
+    <h2>All Contacts</h2>
+    <ul>
+    {% for name, info in contacts.items() %}
+        <li>
+            <strong>{{ name }}</strong> - {{ info["Phone"] }} - {{ info["Email"] }}
+            [<a href="/edit/{{ name }}">Edit</a>]
+            [<a href="/delete/{{ name }}" onclick="return confirm('Delete this contact?')">Delete</a>]
+        </li>
+    {% endfor %}
+    </ul>
+</body>
+</html>
