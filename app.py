@@ -53,5 +53,8 @@ def edit_contact(name):
     contact = contacts.get(name, {})
     return render_template("edit.html", name=name, contact=contact)
 
+import os
+
 if __name__ == "__main__":
-    app.run(debug=True)
+    port = int(os.environ.get("PORT", 10000))
+    app.run(host="0.0.0.0", port=port)
